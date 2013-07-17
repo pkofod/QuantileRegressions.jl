@@ -1,12 +1,14 @@
-using GLM, Winston, QReg
+# using GLM, Winston, QReg
+using GLM, QuantileRegression
 
 # Load data
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
+# TODO: Make automatic URL downloads work
 dat = readtable("engel.csv")
 
 # Fit least absolute deviation model (quantile =.5)
 res = qreg(:(foodexp~income), dat, .5)
-summary(res)
+describe(res)
 
 # Fit quantile regression for a bunch of different quantiles
 dat_plot = [summary(qreg(:(foodexp ~ income), dat, i/10))[2,:] for i in 1:9]
