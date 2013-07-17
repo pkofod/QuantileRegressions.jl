@@ -25,12 +25,11 @@ module QuantileRegression
 
     # I like annotating function arguments to express meaning of parameters
     #  and to enforce correct function usage
-    function bandwidth_hall_sheather(n::Integer, q::Any, alpha::Real)
+    function bandwidth_hall_sheather(n::Integer, q::Real, alpha::Real)
         z = quantile(Normal(), q)
         num = 1.5 * pdf(Normal(), z)^2
-        den = 2. * z^2 + 1
-        h = n^(-1/3) * quantile(Normal(), (1. - alpha / 2.))^(2./3) *
-            (num / den)^(1./3)
+        den = 2.0 * z^2 + 1
+        h = n^(-1/3) * quantile(Normal(), (1. - alpha / 2.))^(2./3) * (num / den)^(1./3)
         return h
     end
 
@@ -69,7 +68,8 @@ module QuantileRegression
     # I really like using keyword arguments for defaults so that
     # function callers can modify them if need be.
     function qreg_coef(y::Vector, X::Matrix, q::Real = 0.5;
-                       tol::Real = 1e-6, max_iter::Integer = 1_000)
+                       tol::Real = 1e-12, max_iter::Integer = 1_000,
+                       threshold::Real = 1e-5)
         # What is this?
         n, p = size(X)
 
@@ -120,14 +120,13 @@ module QuantileRegression
                 for i in 1:n
                     @inbounds resid[i] = y[i] - xbeta[i]
                 end
-
                 # Slower, not in-place, idiomatic version
                 # resid = y - X * beta
 
                 # Changed to be in-place
                 for i in 1:n
-                    if abs(resid[i]) < 1e-5
-                        @inbounds resid[i] = sign(resid[i]) * 1e-5
+                    if abs(resid[i]) < threshold
+                        @inbounds resid[i] = sign(resid[i]) * threshold
                     end
                     if resid[i] < 0
                         @inbounds resid[i] = abs(q * resid[i])
@@ -154,6 +153,7 @@ module QuantileRegression
         h1 = min(std(y), iqre / 1.34) 
         h2 = quantile(Normal(), q + h) - quantile(Normal(), q - h)
         h = h1 * h2
+        # TODO: This line could be optimized, but is a hassle
         fhat0 = 1 / (n * h) * sum(kernel_epanechnikov(resid / h))
         d = copy(resid)
         for i in 1:n
