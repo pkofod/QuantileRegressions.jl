@@ -1,4 +1,3 @@
-# using GLM, Winston, QReg
 using GLM, QuantileRegression
 
 # Load data
@@ -20,6 +19,8 @@ ols = coeftable(res_lm)[2,1]
 ols = rep(ols, 9)
 
 # Plot results
+using Winston
+
 x = [i/10 for i=1:9]
 y = dat_plot["Estimate"]
 p = FramedPlot()
