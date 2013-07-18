@@ -130,7 +130,7 @@ module QuantileRegression
     function qreg(f::Expr, df::AbstractDataFrame, q::Real = 0.5)
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
-        mr = model_response(mf)
+        mr = vector(model_response(mf))
         coef = qreg_coef(mr, mm.m, q)
         vcov = qreg_vcov(mr, mm.m, coef, q)
         return QRegModel(coef, vcov, mf)
