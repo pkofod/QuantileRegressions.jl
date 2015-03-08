@@ -1,4 +1,4 @@
-# Author: Vincent Arel-Bundock (w/ changes by JMW)
+# Author: Vincent Arel-Bundock (w/ changes by JMW & PKM)
 # Contact: varel@umich.edu
 # License: BSD-3
 # Original code from the python statsmodels project
@@ -7,14 +7,16 @@
 using DataFrames
 
 module QuantileRegression
-    export qreg
+
+    import StatsBase.coeftable, GLM.vcov, DataFrames.DataFrameRegressionModel
+    export qreg, coef, vcov, stderr
 
     using DataFrames, Distributions
 
     type QRegModel
         beta::Vector{Float64}
         vcov::Matrix{Float64}
-        mf::ModelFrame
+        stderr::Vector{Float64}
     end
 
     function bandwidth_hall_sheather(n::Integer, q::Real, alpha::Real)
@@ -25,12 +27,9 @@ module QuantileRegression
         return h
     end
 
-    # operate in-place to save on memory allocation
     function kernel_epanechnikov!(u::Vector, x::Vector)
         for i in 1:length(x)
             if abs(x[i]) <= 1
-                # The @inbounds macro tells the compiler it can remove
-                # bounds-checking for array indexing
                 @inbounds u[i] = 0.75 * (1 - x[i]^2)
             else
                 @inbounds u[i] = 0
@@ -43,17 +42,6 @@ module QuantileRegression
         u = similar(x)
         kernel_epanechnikov!(u, x)
         return u
-    end
-
-    function maxdiff(x::Array, y::Array)
-        m = typemin(Float64)
-        for i in length(x)
-            t = abs(x[i] - y[i])
-            if t > m
-                m = t
-            end
-        end
-        return m
     end
 
     function qreg_coef(y::Vector, X::Matrix, q::Real = 0.5;
@@ -74,10 +62,10 @@ module QuantileRegression
             if diff > tol
                 copy!(beta0, beta)
 
-                At_mul_B(xtx, xstar, X)
-                At_mul_B(xty, xstar, y)
+                At_mul_B!(xtx, xstar, X)
+                At_mul_B!(xty, xstar, y)
                 beta = xtx \ xty
-                A_mul_B(xbeta, X, beta)
+                A_mul_B!(xbeta, X, beta)
 
                 for i in 1:n
                     @inbounds resid[i] = y[i] - xbeta[i]
@@ -96,7 +84,7 @@ module QuantileRegression
 
                 broadcast!(/, xstar, X, resid)
 
-                diff = maxdiff(beta0, beta)
+                diff = norm(beta0-beta, Inf)
             end
         end
         return beta
@@ -120,35 +108,38 @@ module QuantileRegression
                 @inbounds d[i] = ((1 - q) / fhat0)^2
             end
         end
-        # This pinv() makes me uncomfortable
-        xtxi = pinv(X' * X)
+    
+        xtx = X' * X
         xtdx = broadcast(*, X, d)' * X
-        vcov = (xtxi * xtdx) * xtxi
+        vcov = (xtx \ xtdx) / xtx
+        
+
+
         return vcov
     end
 
-    function qreg(f::Expr, df::AbstractDataFrame, q::Real = 0.5)
+    function qreg(f::Formula, df::AbstractDataFrame, q::Real = 0.5)
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
-        mr = vector(model_response(mf))
+        mr = model_response(mf)
         coef = qreg_coef(mr, mm.m, q)
         vcov = qreg_vcov(mr, mm.m, coef, q)
-        return QRegModel(coef, vcov, mf)
+        stderr = sqrt(diag(vcov))
+        return DataFrameRegressionModel(QRegModel(coef, vcov, stderr),mf,mm)
     end
 
     coef(x::QRegModel) = x.beta
 
     vcov(x::QRegModel) = x.vcov
 
-    function DataFrames.describe(x::QRegModel)
-        # TODO: Insert column names
-        se = sqrt(diag(x.vcov))
-        out = DataFrame()
-        out["Estimate"] = x.beta
-        out["Std.Error"] = se
-        out["t value"] = x.beta ./ se
-        out["2.5%"] = x.beta - 1.96 * se
-        out["97.5%"] = x.beta + 1.96 * se
-        return out
+    stderr(x::QRegModel) = x.stderr
+
+    function coeftable (mm::QRegModel)
+        cc = coef(mm)
+        se = stderr(mm)
+        tt = cc./se
+       CoefTable(hcat(cc,se,tt),
+                 ["Estimate","Std.Error","t value"],
+                 ["x$i" for i = 1:length(cc)])
     end
 end
