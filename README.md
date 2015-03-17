@@ -3,7 +3,7 @@
 A very simple (and mostly untested) implementation of quantile regression.
 
 * https://github.com/vincentarelbundock/QuantileRegression.jl
-* Author: Vincent Arel-Bundock (with changes by John Myles White)
+* Author: Vincent Arel-Bundock (with changes by John Myles White and Patrick Kofod Mogensen)
 * Contact: varel@umich.edu
 * License: BSD-3
 * Original code from the python statsmodels project
@@ -17,20 +17,22 @@ The file ``examples/qreg_example.jl`` shows how to use the functions provided he
 
 We are interested in the relationship between income and expenditures on food for a sample of working class Belgian households in 1857 (the Engel data), so we estimate a least absolute deviation model.
 
-    # Load stuff
-    using QReg
-    url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
-    dat = readtable("engel.csv")
+    using QuantileRegression
 
-    # Fit least absolute deviation model (quantile =.5)
-    > using QReg
-    > res = qreg(:(foodexp~income), dat, .5)
-    > summary(res)
+    # Load data
+    url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
+    Data = readtable("engel.csv")
+
+    # Fit least absolute deviation model (quantile  = .5)
+    > ResultQR = qreg(foodexp~income, Data, .5)
+    > β = coeftable(ResultQR)
+    > show(β)
 
     2x5 DataFrame:
-            Estimate Std.Error t value     2.5%    97.5%
-    [1,]     81.4823   14.6345 5.56783  52.7987  110.166
-    [2,]    0.560181 0.0131756 42.5164 0.534356 0.586005
+                 Estimate   Std.Error   t value
+    (Intercept)  81.4823    14.6345      5.56783
+    income        0.560181   0.0131756  42.5164
+
 
 The results look pretty close to Stata 12's ``qreg``:
 
@@ -49,4 +51,4 @@ The results look pretty close to Stata 12's ``qreg``:
 
 We can also compute and plot (using Julia's Winston) results for various quantiles. Full code to produce the figure is in the examples folder.
 
-![](https://github.com/vincentarelbundock/QReg/raw/master/examples/qreg_example_plot.png)
+![](./examples/qreg_example_plot.png)
