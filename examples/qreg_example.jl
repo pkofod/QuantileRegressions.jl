@@ -1,31 +1,39 @@
-using GLM, QuantileRegression, Gadfly
+using GLM, QuantileRegression, Winston
 
 # Load data
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
-# TODO: Make automatic URL downloads work
-dat = readtable("engel.csv")
+Data = readtable("engel.csv")
 
 # Fit least absolute deviation model (quantile  = .5)
-res = qreg(foodexp~income, dat, .5)
-coefs = coeftable(res)
-show(coefs)
+ResultQR = qreg(foodexp~income, Data, .5)
+β = coeftable(ResultQR)
+show(β)
+
 # Fit quantile regression for a bunch of different quantiles
-data_plot = reduce(vcat,[coeftable(qreg(foodexp ~ income, dat, i/20)).mat[2,1:2] for i in 1:19])
+QNum = 35; # Number of equally spaced quantiles
+DataPlot = reduce(vcat,[coeftable(qreg(foodexp ~ income, Data, i/(QNum+1))).mat[2,1:2] for i in 1:QNum])
 
 # Fit OLS model to compare
-res_lm = lm(foodexp~income, dat)
-ols = reduce(vcat,rep(coeftable(res_lm).mat[2,1:2],19))
+ResultLM = lm(foodexp~income, Data) # Fit the model using OLS from the GLM-package
+ols = reduce(vcat,rep(coeftable(ResultLM).mat[2,1:2],QNum)) 
 
-Ydata = [ols[:,1];data_plot[:,1]]
-Yse   = [ols[:,2];data_plot[:,2]]
+PlotDF =  DataFrame(X = linspace(1,QNum,QNum)/(QNum+1),
+                         Y = DataPlot[:,1],
+                         ols = ols[:,1],
+                         Ymin = DataPlot[:,1] - 1.96 * DataPlot[:,2],
+                         Ymax = DataPlot[:,1] + 1.96 * DataPlot[:,2])
 
-PlotDataFrame =  DataFrame(X = [linspace(1,19,19)/20;linspace(1,19,19)/20],
-                         Y = Ydata,
-                         Ymin = Ydata - 1.96 * Yse,
-                         Ymax = Ydata + 1.96 * Yse, 
-                         Estimator = [["OLS" for i = 1:19];["Q(0.5)" for i = 1:19]])
-
-plot(layer(PlotDataFrame, x = "X", y = "Ymin",Geom.line,color = "Estimator"),
-     layer(PlotDataFrame, x = "X", y = "Ymax",Geom.line,color = "Estimator"),
-     layer(PlotDataFrame, x = "X", y = "Y", color = "Estimator",Geom.line), 
-     Guide.XLabel("Income"), Guide.YLabel("Food Expenditure"))
+x = PlotDF[:X]
+p = FramedPlot()
+βτ   = Curve(x, PlotDF[:Y])
+βols = Curve(x, PlotDF[:ols] , "color", "red")
+ci_low  = Curve(x, PlotDF[:Ymin], "type" , "dash")
+ci_high = Curve(x, PlotDF[:Ymax], "type" , "dash")
+setattr(βτ,"label","β(τ)")
+setattr(βols, "label", "β(ols)")
+lgnd = Legend(.8,.2,{βτ, βols})
+add(p, βτ, βols, ci_low, ci_high, lgnd)
+setattr(p, "title" , "Quantile regression: Food Expenditure ~ Income")
+setattr(p, "xlabel", "Quantiles")
+setattr(p, "ylabel", "Coefficient on Income")
+savefig(p, "./qreg_example_plot.png")

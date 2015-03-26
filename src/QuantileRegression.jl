@@ -8,7 +8,7 @@ using DataFrames
 
 module QuantileRegression
 
-    import StatsBase.coeftable, GLM.vcov, DataFrames.DataFrameRegressionModel
+    import StatsBase.coeftable, DataFrames.DataFrameRegressionModel
     export qreg, coef, vcov, stderr
 
     using DataFrames, Distributions
@@ -45,7 +45,7 @@ module QuantileRegression
     end
 
     function qreg_coef(y::Vector, X::Matrix, q::Real = 0.5;
-                       tol::Real = 1e-12, max_iter::Integer = 1_000,
+                       tol::Real = 1e-12, maxIter::Integer = 1_000,
                        threshold::Real = 1e-5)
         n, p = size(X)
         xstar = copy(X)
@@ -58,7 +58,7 @@ module QuantileRegression
         xbeta = Array(Float64, n)
         resid = Array(Float64, n)
 
-        for itr in 1:max_iter
+        for itr in 1:maxIter
             if diff > tol
                 copy!(beta0, beta)
 
@@ -113,8 +113,6 @@ module QuantileRegression
         xtdx = broadcast(*, X, d)' * X
         vcov = (xtx \ xtdx) / xtx
         
-
-
         return vcov
     end
 
@@ -138,7 +136,7 @@ module QuantileRegression
         cc = coef(mm)
         se = stderr(mm)
         tt = cc./se
-       CoefTable(hcat(cc,se,tt),
+        CoefTable(hcat(cc,se,tt),
                  ["Estimate","Std.Error","t value"],
                  ["x$i" for i = 1:length(cc)])
     end
