@@ -1,9 +1,3 @@
-# Author: Vincent Arel-Bundock (w/ changes by JMW & PKM)
-# Contact: varel@umich.edu
-# License: BSD-3
-# Original code from the python statsmodels project
-# https://github.com/statsmodels/statsmodels
-
 using DataFrames
 
 module QuantileRegression
