@@ -4,4 +4,4 @@ julia:
   - nightly
 
 after_success:
-- julia -e 'cd(Pkg.dir("MyPkg")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
+- julia -e 'cd(Pkg.dir("QuantileRegression")); Pkg.add("Coverage"); using Coverage; Coveralls.submit(Coveralls.process_folder())'
