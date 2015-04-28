@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/vincentarelbundock/QuantileRegression.jl/badge.svg?branch=master)](https://coveralls.io/r/vincentarelbundock/QuantileRegression.jl?branch=master)
+[![Build Status](https://travis-ci.org/vincentarelbundock/QuantileRegression.jl.svg?branch=master)](https://travis-ci.org/vincentarelbundock/QuantileRegression.jl)
 # Quantile regression in the Julia language
 
 A very simple (and mostly untested) implementation of quantile regression.
