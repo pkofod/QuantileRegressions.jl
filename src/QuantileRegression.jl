@@ -17,7 +17,7 @@ module QuantileRegression
         stderr::Vector{Float64}
     end
 
-    function qreg(f::Formula, df::AbstractDataFrame; q::Real = 0.5, method::Symbol = :ip)
+    function qreg(f::Formula, df::AbstractDataFrame, q::Float64 = 0.5; method::Symbol = :ip)
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
         mr = model_response(mf)
@@ -34,13 +34,15 @@ module QuantileRegression
         return DataFrameRegressionModel(QRegModel(coef, vcov, stderr),mf,mm)
     end
 
+    qreg(f::Formula, df::AbstractDataFrame; method::Symbol = :ip) = qreg(f, df, 0.5; method = method)
+
     coef(x::QRegModel) = x.beta
 
     vcov(x::QRegModel) = x.vcov
 
     stderr(x::QRegModel) = x.stderr
 
-    function StatsBase.coeftable (mm::QRegModel)
+    function StatsBase.coeftable(mm::QRegModel)
         cc = coef(mm)
         se = stderr(mm)
         tt = cc./se
