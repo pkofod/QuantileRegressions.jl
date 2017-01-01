@@ -1,20 +1,14 @@
-[![Coverage Status](https://coveralls.io/repos/vincentarelbundock/QuantileRegression.jl/badge.svg?branch=master)](https://coveralls.io/r/vincentarelbundock/QuantileRegression.jl?branch=master)
-[![Build Status](https://travis-ci.org/vincentarelbundock/QuantileRegression.jl.svg?branch=master)](https://travis-ci.org/vincentarelbundock/QuantileRegression.jl)
-
-# This package is no longer supported.
-
-I will not accept PRs or act on requests for modifications. I'm leaving the repository up in case someone wants to fork and maintain.
+[![Coverage Status](https://coveralls.io/repos/pkofod/QuantileRegression.jl/badge.svg?branch=master)](https://coveralls.io/r/pkofod/QuantileRegression.jl?branch=master)
+[![Build Status](https://travis-ci.org/pkofod/QuantileRegression.jl.svg?branch=master)](https://travis-ci.org/pkofod/QuantileRegression.jl)
 
 # Quantile regression in the Julia language
 
 A very simple (and mostly untested) implementation of quantile regression.
 
-* https://github.com/vincentarelbundock/QuantileRegression.jl
-* Author: Vincent Arel-Bundock (with changes by John Myles White and Patrick Kofod Mogensen)
-* Contact: varel@umich.edu
+* Install using `Pkg.clone(https://github.com/pkofod/QuantileRegression.jl)`
+* Main author: Patrick Kofod Mogensen
+* Contact: Use the [https://github.com/pkofod/QuantileRegression.jl/issues](issues) page
 * License: BSD-3
-* Original code from the python statsmodels project
-    - https://github.com/statsmodels/statsmodels
 
 # Example
 
@@ -59,3 +53,8 @@ The results look pretty close to Stata 12's ``qreg``:
 We can also compute and plot (using Julia's Winston) results for various quantiles. Full code to produce the figure is in the examples folder.
 
 ![](./examples/qreg_example_plot.png)
+
+# History
+This package was originally created as a port of the reweighed least squares code
+from the python project [https://github.com/statsmodels/statsmodels](statsmodels)
+by Vincent Arel-Bundock. All contributions can be seen via the [https://github.com/pkofod/QuantileRegression.jl/graphs/contributors](contributors) page.
