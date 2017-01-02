@@ -4,7 +4,7 @@ module QuantileRegression
 
     import DataFrames.DataFrameRegressionModel
     import Base.LinAlg.BLAS.axpy!
-    export qreg, coef, vcov, stderr
+    export qreg, coef, vcov, stderr, quantiles
 
     using DataFrames, Distributions, Base.LinAlg.BLAS
 
@@ -41,6 +41,9 @@ module QuantileRegression
     vcov(x::QRegModel) = x.vcov
 
     stderr(x::QRegModel) = x.stderr
+
+    quantiles(x::QRegModel) = x.q
+    quantiles(x::DataFrameRegressionModel) = quantiles(x.model)
 
     function StatsBase.coeftable(mm::QRegModel)
         cc = coef(mm)
