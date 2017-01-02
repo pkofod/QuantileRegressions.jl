@@ -2,7 +2,8 @@ using DataFrames
 
 module QuantileRegression
 
-    import  DataFrames.DataFrameRegressionModel
+    import DataFrames.DataFrameRegressionModel
+    import Base.LinAlg.BLAS.axpy!
     export qreg, coef, vcov, stderr
 
     using DataFrames, Distributions, Base.LinAlg.BLAS
@@ -33,8 +34,6 @@ module QuantileRegression
         stderr = sqrt(diag(vcov))
         return DataFrameRegressionModel(QRegModel(coef, vcov, stderr),mf,mm)
     end
-
-    qreg(f::Formula, df::AbstractDataFrame; method::Symbol = :ip) = qreg(f, df, 0.5; method = method)
 
     coef(x::QRegModel) = x.beta
 
