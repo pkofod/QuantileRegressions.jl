@@ -3,6 +3,7 @@ using DataFrames
 module QuantileRegression
 
     import DataFrames.DataFrameRegressionModel
+    import DataFrames.coef
     import Base.LinAlg.BLAS.axpy!
     export qreg, coef, vcov, stderr, quantiles
 
@@ -37,13 +38,14 @@ module QuantileRegression
     end
 
     coef(x::QRegModel) = x.beta
+    coef(rm::DataFrameRegressionModel) = coef(rm.model)
 
     vcov(x::QRegModel) = x.vcov
 
     stderr(x::QRegModel) = x.stderr
 
     quantiles(x::QRegModel) = x.q
-    quantiles(x::DataFrameRegressionModel) = quantiles(x.model)
+    quantiles(rm::DataFrameRegressionModel) = quantiles(rm.model)
 
     function StatsBase.coeftable(mm::QRegModel)
         cc = coef(mm)
