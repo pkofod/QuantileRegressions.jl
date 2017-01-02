@@ -16,6 +16,7 @@ module QuantileRegression
         beta::Vector{Float64}
         vcov::Matrix{Float64}
         stderr::Vector{Float64}
+        q
     end
 
     function qreg(f::Formula, df::AbstractDataFrame, q::Float64 = 0.5; method::Symbol = :ip)
@@ -32,7 +33,7 @@ module QuantileRegression
         end
         vcov = qreg_vcov(mr, mm.m, coef, q)
         stderr = sqrt(diag(vcov))
-        return DataFrameRegressionModel(QRegModel(coef, vcov, stderr),mf,mm)
+        return DataFrameRegressionModel(QRegModel(coef, vcov, stderr, q),mf,mm)
     end
 
     coef(x::QRegModel) = x.beta
