@@ -4,7 +4,7 @@
 # Original code from the python statsmodels project
 # https://github.com/statsmodels/statsmodels
 
-function qreg_coef(y::Vector, X::Matrix, q::Real = 0.5;
+function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS;
                tol::Real = 1e-12, maxIter::Integer = 1_000,
                threshold::Real = 1e-5)
 n, p = size(X)

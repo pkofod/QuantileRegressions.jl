@@ -5,13 +5,10 @@ module QuantileRegression
     import DataFrames.DataFrameRegressionModel
     import DataFrames.coef
     import Base.LinAlg.BLAS.axpy!
-    export qreg, coef, vcov, stderr, quantiles
+    export qreg, coef, vcov, stderr, quantiles, IP, IRLS
 
     using DataFrames, Distributions, Base.LinAlg.BLAS
 
-    include("InteriorPoint.jl")
-    include("IRLS.jl")
-    include("Covariance.jl")
 
     type QRegModel
         beta::Vector{Float64}
@@ -20,21 +17,28 @@ module QuantileRegression
         q
     end
 
-    function qreg(f::Formula, df::AbstractDataFrame, q::Float64 = 0.5; method::Symbol = :ip)
+    abstract Solver
+
+    immutable IP <: Solver
+    end
+
+    immutable IRLS <: Solver
+    end
+
+    include("InteriorPoint.jl")
+    include("IRLS.jl")
+    include("Covariance.jl")
+
+    function qreg(f::Formula, df::AbstractDataFrame, q, s::Solver = IP())
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
         mr = model_response(mf)
-        if method == :irls
-            coef = qreg_coef(mr, mm.m, q)
-        elseif method == :ip
-            coef = qreg_ip_coef(mr, mm.m,q)
-        else
-            coef = qreg_ip_coef(mr, mm.m, q)
-        end
+        coef = qreg_coef(mr, mm.m, q, s)
         vcov = qreg_vcov(mr, mm.m, coef, q)
         stderr = sqrt(diag(vcov))
-        return DataFrameRegressionModel(QRegModel(coef, vcov, stderr, q),mf,mm)
+        return DataFrameRegressionModel(QRegModel(coef, vcov, stderr, q), mf, mm)
     end
+    qreg(f::Formula, df::AbstractDataFrame, s::Solver) = qreg(f, df, 0.5, s)
 
     coef(x::QRegModel) = x.beta
     coef(rm::DataFrameRegressionModel) = coef(rm.model)
