@@ -51,8 +51,8 @@ module QuantileRegression
         cc = coef(mm)
         se = stderr(mm)
         tt = cc./se
-        CoefTable(hcat(cc,se,tt),
-                 ["Estimate","Std.Error","t value"],
+        CoefTable(hcat(kron(mm.q,ones(length(se))), cc,se,tt),
+                 ["Quantile",  "Estimate","Std.Error","t value"],
                  ["x$i" for i = 1:length(cc)])
     end
 end

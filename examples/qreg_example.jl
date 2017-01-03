@@ -8,7 +8,7 @@ ResultQR = qreg(foodexp~income, df, .5)
 
 # Fit quantile regression for a bunch of different quantiles
 QNum = 35; # Number of equally spaced quantiles
-DataPlot = reduce(vcat,[[coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[1][2] coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[2][2]]  for i in 1:QNum])
+DataPlot = reduce(vcat,[[coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[2][2] coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[3][2]]  for i in 1:QNum])
 
 # Fit OLS model to compare
 ResultLM = lm(foodexp~income, df) # Fit the model using OLS from the GLM-package
