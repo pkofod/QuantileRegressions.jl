@@ -23,7 +23,11 @@ module QuantileRegression
     end
 
     immutable IRLS <: Solver
+        tol
+        maxIter
+        threshold
     end
+    IRLS(;tol::Real = 1e-12, maxIter::Integer = 1_000, threshold::Real = 1e-5) = IRLS(tol, maxIter, threshold)
 
     include("InteriorPoint.jl")
     include("IRLS.jl")
