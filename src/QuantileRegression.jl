@@ -29,7 +29,6 @@ module QuantileRegression
         elseif method == :ip
             coef = qreg_ip_coef(mr, mm.m,q)
         else
-            println("You didn't provide a supported method, defaulting to :ip.")
             coef = qreg_ip_coef(mr, mm.m, q)
         end
         vcov = qreg_vcov(mr, mm.m, coef, q)
