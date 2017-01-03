@@ -1,7 +1,6 @@
 language: julia
 julia:
 - release
-- nightly
 script:
 - julia --check-bounds=yes -e 'Pkg.clone(pwd()); Pkg.build("QuantileRegression"); Pkg.test("QuantileRegression"; coverage=true)'
 after_success:
