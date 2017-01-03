@@ -82,6 +82,5 @@ We can also compute and plot (using Julia's Winston) results for various quantil
 ![](./examples/qreg_example_plot.png)
 
 # History
-This package was originally created as a port of the reweighed least squares code
-from the python project [https://github.com/statsmodels/statsmodels](statsmodels)
-by Vincent Arel-Bundock. All contributions can be seen via the [https://github.com/pkofod/QuantileRegression.jl/graphs/contributors](contributors) page.
+This package was originally created as a port of the reweighed least squares code by Vincent Arel-Bundock
+from the python project [statsmodels](https://github.com/statsmodels/statsmodels). All contributions can be seen via the [contributors](https://github.com/pkofod/QuantileRegression.jl/graphs/contributors) page.
