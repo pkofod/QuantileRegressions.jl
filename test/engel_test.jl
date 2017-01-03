@@ -1,8 +1,7 @@
 Data = readtable("engel.csv")
 
-not_used = qreg(foodexp~income, Data, method = :qrt) # Test case for "no supported method, default to  ip"
-out_ip = qreg(foodexp~income, Data, method = :ip)
-out_irls = qreg(foodexp~income, Data, method = :irls)
+out_ip = qreg(foodexp~income, Data, IP())
+out_irls = qreg(foodexp~income, Data, IRLS())
 
 @assert norm( out_ip.model.beta - [81.4822; 0.560181]) < 1e-4
 @assert norm( out_irls.model.beta - [81.4823; 0.560181]) < 1e-4
