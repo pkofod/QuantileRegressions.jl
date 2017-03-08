@@ -58,7 +58,7 @@ n, m = size(X)
 s = u - x
 y = -X\Y
 r = c - X*y
-axpy!(0.001, (r .== 0.0).*1.0, r)
+BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
 z = r .* (r .> 0.0)
 w = z - r
 gap = Base.LinAlg.BLAS.dot(c, x) - Base.LinAlg.BLAS.dot(y, b) + Base.LinAlg.BLAS.dot(w, u)
@@ -104,7 +104,7 @@ for it = 1:max_it
         sinv = 1 ./ s
         xi = mu .* (xinv - sinv)
         #rhs = rhs + Q * (dxdz - dsdw - xi)
-        axpy!(1.0, Q * (dxdz - dsdw - xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
+        BLAS.axpy!(1.0, Q * (dxdz - dsdw - xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
 
         dy = AQtF\rhs
         dx = q .* (X*dy + xi - r - dxdz + dsdw)
@@ -127,11 +127,11 @@ for it = 1:max_it
     end
 
     # Take the steps
-    axpy!(fp, dx, x)
-    axpy!(fp, ds, s)
-    axpy!(fd, dy, y)
-    axpy!(fd, dw, w)
-    axpy!(fd, dz, z)
+    BLAS.axpy!(fp, dx, x)
+    BLAS.axpy!(fp, ds, s)
+    BLAS.axpy!(fd, dy, y)
+    BLAS.axpy!(fd, dw, w)
+    BLAS.axpy!(fd, dz, z)
 
     gap = Base.LinAlg.BLAS.dot(c, x) - Base.LinAlg.BLAS.dot(y, b) + Base.LinAlg.BLAS.dot(w, u)
 
