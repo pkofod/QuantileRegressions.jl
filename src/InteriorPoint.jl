@@ -70,8 +70,8 @@ for it = 1:max_it
     q = 1 ./ (z ./ x + w ./ s)
     r = z - w
     Q = Diagonal(sqrt(q)) # Very efficient to do since Q diagonal
-    AQtF = @atleastversion(VERSION)
-    #AQtF = qrfact!(Q*X, pivot = true) # PE 2004
+    # AQtF = @atleastversion(VERSION)
+    AQtF = qrfact(Q*X, Val{true}) # PE 2004
     rhs = Q*r        # "
     dy = AQtF\rhs   # "
     dx = q.*(X*dy - r)
