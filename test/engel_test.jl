@@ -1,10 +1,10 @@
-Data = readtable("engel.csv")
+Data = readtable(joinpath(dirname(@__FILE__),"engel.csv"))
 
-out_ip = qreg(foodexp~income, Data, IP())
-out_irls = qreg(foodexp~income, Data, IRLS())
+out_ip = qreg(@formula(foodexp~income), Data, IP())
+out_irls = qreg(@formula(foodexp~income), Data, IRLS())
 
-@assert norm( out_ip.model.beta - [81.4822; 0.560181]) < 1e-4
-@assert norm( out_irls.model.beta - [81.4823; 0.560181]) < 1e-4
+@test norm( out_ip.model.beta - [81.4822; 0.560181]) < 1e-4
+@test norm( out_irls.model.beta - [81.4823; 0.560181]) < 1e-4
 
 #=
 ...... Interior point ......

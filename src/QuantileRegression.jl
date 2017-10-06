@@ -10,14 +10,14 @@ module QuantileRegression
     using DataFrames, Distributions, Base.LinAlg.BLAS
 
 
-    type QRegModel
+    mutable struct QRegModel
         beta::Vector{Float64}
         vcov::Matrix{Float64}
         stderr::Vector{Float64}
         q
     end
 
-    abstract Solver
+    abstract type Solver end
 
     immutable IP <: Solver
     end
