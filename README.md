@@ -5,7 +5,7 @@
 
 A very simple (and mostly untested) implementation of quantile regression.
 
-* Install using `Pkg.clone(https://github.com/pkofod/QuantileRegression.jl)`
+* Install using `Pkg.clone("https://github.com/pkofod/QuantileRegression.jl")`
 * Main author: Patrick Kofod Mogensen
 * Contact: Use the [https://github.com/pkofod/QuantileRegression.jl/issues](issues) page
 * License: BSD-3
@@ -51,7 +51,7 @@ julia> df = readtable(Requests.get_streaming(url))
 │ 235 │ 235 │ 1057.68 │ 750.32  │
 
 julia> # Fit least absolute deviation model (quantile  = .5)
-       ResultQR = qreg(foodexp~income, df, .5)
+       ResultQR = qreg(@formula(foodexp~income), df, .5)
 DataFrames.DataFrameRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
 
 Formula: foodexp ~ 1 + income
