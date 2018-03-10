@@ -2,13 +2,11 @@ using DataFrames
 
 module QuantileRegression
 
-    import DataFrames.DataFrameRegressionModel
-    import DataFrames.coef
+    import StatsModels: DataFrameRegressionModel, Formula, coef, @formula
     import Base.LinAlg.BLAS.axpy!
-    export qreg, coef, vcov, stderr, quantiles, IP, IRLS
+    export qreg, coef, vcov, stderr, quantiles, IP, IRLS, @formula
 
-    using DataFrames, Distributions, Base.LinAlg.BLAS
-
+    using DataFrames, Distributions, Base.LinAlg.BLAS, StatsModels, StatsBase
 
     mutable struct QRegModel
         beta::Vector{Float64}
@@ -39,7 +37,7 @@ module QuantileRegression
         mr = model_response(mf)
         coef = qreg_coef(mr, mm.m, q, s)
         vcov = qreg_vcov(mr, mm.m, coef, q)
-        stderr = sqrt(diag(vcov))
+        stderr = sqrt.(diag(vcov))
         return DataFrameRegressionModel(QRegModel(coef, vcov, stderr, q), mf, mm)
     end
     qreg(f::Formula, df::AbstractDataFrame, s::Solver) = qreg(f, df, 0.5, s)

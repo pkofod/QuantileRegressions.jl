@@ -9,12 +9,12 @@ function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
     xstar = copy(X)
     diff = Inf
 
-    beta0 = Array(Float64, p)
-    beta = Array(Float64, p)
-    xtx = Array(Float64, p, p)
-    xty = Array(Float64, p)
-    xbeta = Array(Float64, n)
-    resid = Array(Float64, n)
+    beta0 = Array{Float64}(p)
+    beta = Array{Float64}(p)
+    xtx = Array{Float64}(p, p)
+    xty = Array{Float64}(p)
+    xbeta = Array{Float64}(n)
+    resid = Array{Float64}(n)
 
     for itr in 1:s.maxIter
         if diff > s.tol

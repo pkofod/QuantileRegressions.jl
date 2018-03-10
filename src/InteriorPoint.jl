@@ -69,7 +69,7 @@ for it = 1:max_it
     #   Compute affine step
     q = 1 ./ (z ./ x + w ./ s)
     r = z - w
-    Q = Diagonal(sqrt(q)) # Very efficient to do since Q diagonal
+    Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
     # AQtF = @atleastversion(VERSION)
     AQtF = qrfact(Q*X, Val{true}) # PE 2004
     rhs = Q*r        # "
@@ -84,13 +84,13 @@ for it = 1:max_it
     fs = bound(s, ds)
     fw = bound(w, dw)
     fz = bound(z, dz)
-    fpv = min(fx, fs)
-    fdv = min(fw, fz)
-    fp = min(minimum(beta * fpv), 1)
-    fd = min(minimum(beta * fdv), 1)
+    fpv = min.(fx, fs)
+    fdv = min.(fw, fz)
+    fp = min.(minimum(beta * fpv), 1)
+    fd = min.(minimum(beta * fdv), 1)
 
     # If full step is feasible, take it. Otherwise modify it
-    if min(fp, fd) < 1.0
+    if min.(fp, fd) < 1.0
 
         # Update mu
         mu = Base.LinAlg.BLAS.dot(z, x) + Base.LinAlg.BLAS.dot(w, s)
@@ -119,10 +119,10 @@ for it = 1:max_it
         fs = bound(s, ds)
         fw = bound(w, dw)
         fz = bound(z, dz)
-        fp = min(fx, fs)
-        fd = min(fw, fz)
-        fp = min(minimum(beta .* fp), 1)
-        fd = min(minimum(beta .* fd), 1)
+        fp = min.(fx, fs)
+        fd = min.(fw, fz)
+        fp = min.(minimum(beta .* fp), 1)
+        fd = min.(minimum(beta .* fd), 1)
 
     end
 

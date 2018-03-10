@@ -1,3 +1,5 @@
+StatsBase
+StatsModels
 DataFrames
 Distributions
 julia 0.6

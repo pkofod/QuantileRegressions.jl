@@ -52,14 +52,14 @@ julia> df = readtable(Requests.get_streaming(url))
 
 julia> # Fit least absolute deviation model (quantile  = .5)
        ResultQR = qreg(@formula(foodexp~income), df, .5)
-DataFrames.DataFrameRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
+StatsModels.DataFrameRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
 
 Formula: foodexp ~ 1 + income
 
 Coefficients:
-             Estimate Std.Error t value
-(Intercept)   81.4822   14.6345 5.56783
-income       0.560181 0.0131756 42.5164
+             Quantile Estimate Std.Error t value
+(Intercept)       0.5  81.4822   14.6345 5.56783
+income            0.5 0.560181 0.0131756 42.5164
 ```
 
 The results look pretty close to Stata 12's ``qreg``:

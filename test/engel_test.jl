@@ -1,4 +1,5 @@
-Data = readtable(joinpath(dirname(@__FILE__),"engel.csv"))
+url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
+Data = readtable(Requests.get_streaming(url))
 
 out_ip = qreg(@formula(foodexp~income), Data, IP())
 out_irls = qreg(@formula(foodexp~income), Data, IRLS())
