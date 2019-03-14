@@ -2,4 +2,6 @@ StatsBase
 StatsModels
 DataFrames
 Distributions
-julia 0.6
+LinearAlgebra
+Statistics
+julia 0.7
