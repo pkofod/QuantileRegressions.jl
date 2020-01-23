@@ -9,21 +9,21 @@ function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
     xstar = copy(X)
     diff = Inf
 
-    beta0 = Array{Float64}(p)
-    beta = Array{Float64}(p)
-    xtx = Array{Float64}(p, p)
-    xty = Array{Float64}(p)
-    xbeta = Array{Float64}(n)
-    resid = Array{Float64}(n)
+    beta0 = Array{Float64}(undef, p)
+    beta  = Array{Float64}(undef, p)
+    xtx   = Array{Float64}(undef, p, p)
+    xty   = Array{Float64}(undef, p)
+    xbeta = Array{Float64}(undef, n)
+    resid = Array{Float64}(undef, n)
 
     for itr in 1:s.maxIter
         if diff > s.tol
-            copy!(beta0, beta)
+            copyto!(beta0, beta)
 
-            At_mul_B!(xtx, xstar, X)
-            At_mul_B!(xty, xstar, y)
+            mul!(xtx, xstar', X)
+            mul!(xty, xstar', y)
             beta = xtx \ xty
-            A_mul_B!(xbeta, X, beta)
+            mul!(xbeta, X, beta)
 
             for i in 1:n
                 @inbounds resid[i] = y[i] - xbeta[i]
@@ -40,9 +40,9 @@ function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
                 end
             end
 
-            broadcast!(/, xstar, X, resid)
+            xstar .= X ./ resid
 
-            diff = norm(beta0-beta, Inf)
+            diff = norm(beta0 - beta, Inf)
         end
     end
     return beta

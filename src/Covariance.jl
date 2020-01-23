@@ -8,7 +8,7 @@ function bandwidth_hall_sheather(n::Integer, q::Real, alpha::Real)
     z = quantile(Normal(), q)
     num = 1.5 * pdf(Normal(), z)^2
     den = 2.0 * z^2 + 1
-    h = n^(-1/3) * quantile(Normal(), (1. - alpha / 2.))^(2./3) * (num / den)^(1./3)
+    h = n^(-1/3) * quantile(Normal(), (1 - alpha / 2))^(2/3) * (num / den)^(1/3)
     return h
 end
 
@@ -34,7 +34,7 @@ function qreg_vcov(y::Vector, X::Matrix, beta::Vector, q::Real)
     n = length(resid)
     iqre = quantile(resid, .75) - quantile(resid, .25)
     h = bandwidth_hall_sheather(n, q, .05)
-    h1 = min(std(y), iqre / 1.34) 
+    h1 = min(std(y), iqre / 1.34)
     h2 = quantile(Normal(), q + h) - quantile(Normal(), q - h)
     h = h1 * h2
     # TODO: This line could be optimized, but is a hassle

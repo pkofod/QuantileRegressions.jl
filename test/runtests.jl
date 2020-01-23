@@ -1,5 +1,5 @@
 using QuantileRegression
-using DataFrames, Requests
-using Base.Test
+using DataFrames, CSV, LinearAlgebra
+using Test
 
 include("engel_test.jl")
