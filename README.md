@@ -18,16 +18,14 @@ The file ``examples/qreg_example.jl`` shows how to use the functions provided he
 
 We are interested in the relationship between income and expenditures on food for a sample of working class Belgian households in 1857 (the Engel data), so we estimate a least absolute deviation model.
 
-```jlcon
+```jldoctest
 julia> using QuantileRegression
-
-julia> using Requests
 
 julia> # Load data
        url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
 "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
 
-julia> df = readtable(Requests.get_streaming(url))
+julia> df = readtable(download(url))
 235×3 DataFrames.DataFrame
 │ Row │ x   │ income  │ foodexp │
 ├─────┼─────┼─────────┼─────────┤
@@ -52,9 +50,9 @@ julia> df = readtable(Requests.get_streaming(url))
 
 julia> # Fit least absolute deviation model (quantile  = .5)
        ResultQR = qreg(@formula(foodexp~income), df, .5)
-StatsModels.DataFrameRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
+StatsModels.TableRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
 
-Formula: foodexp ~ 1 + income
+foodexp ~ 1 + income
 
 Coefficients:
              Quantile Estimate Std.Error t value

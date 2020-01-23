@@ -1,7 +1,7 @@
 using QuantileRegression
-using DataFrames
-cd(Pkg.dir("QuantileRegression")*"/examples")
-df = readtable("engel.csv")
+using DataFrames, CSV
+cd(joinpath(dirname(pathof(QuantileRegression)), "..", "examples"))
+df = CSV.read("engel.csv")
 
 
 out_ip = qreg(foodexp~income, df, IP()) # or just qreg(foodexp~income, df)

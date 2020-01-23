@@ -1,24 +1,24 @@
-using GLM, QuantileRegression, Winston
-using Requests
+using GLM, QuantileRegression, CSV, Winston, StatsBase
 
 # Load data
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
-df = readtable(Requests.get_streaming(url))
-ResultQR = qreg(foodexp~income, df, .5)
+df = CSV.read(download(url))
+ResultQR = qreg(@formula(foodexp ~ income), df, .5)
 
 # Fit quantile regression for a bunch of different quantiles
 QNum = 35; # Number of equally spaced quantiles
-DataPlot = reduce(vcat,[[coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[2][2] coeftable(qreg(foodexp ~ income, df, i/(QNum+1); method = :ip)).cols[3][2]]  for i in 1:QNum])
+DataPlot = reduce(vcat, [[coeftable(qreg(@formula(foodexp ~ income), df, i/(QNum+1), IP())).cols[2][2] coeftable(qreg(@formula(foodexp ~ income), df, i/(QNum+1), IP())).cols[3][2]] for i in 1:QNum])
 
 # Fit OLS model to compare
-ResultLM = lm(foodexp~income, df) # Fit the model using OLS from the GLM-package
-ols = vcat([[coeftable(ResultLM).cols[1][2] coeftable(ResultLM).cols[2][2]] for i =1:QNum]...)
+ResultLM = lm(@formula(foodexp ~ income), df) # Fit the model using OLS from the GLM-package
+ols = vcat([[coeftable(ResultLM).cols[1][2] coeftable(ResultLM).cols[2][2]] for i in 1:QNum]...)
 
-PlotDF =  DataFrame(X = linspace(1,QNum,QNum)/(QNum+1),
-                         Y = DataPlot[:,1],
-                         ols = ols[:,1],
-                         Ymin = DataPlot[:,1] - 1.96 * DataPlot[:,2],
-                         Ymax = DataPlot[:,1] + 1.96 * DataPlot[:,2])
+PlotDF = DataFrame(
+    X = range(1, length=QNum, stop=QNum)/(QNum+1),
+    Y = DataPlot[:,1],
+    ols = ols[:,1],
+    Ymin = DataPlot[:,1] - 1.96 * DataPlot[:,2],
+    Ymax = DataPlot[:,1] + 1.96 * DataPlot[:,2])
 
 x = PlotDF[:X]
 p = FramedPlot()

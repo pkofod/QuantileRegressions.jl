@@ -1,5 +1,5 @@
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
-Data = readtable(Requests.get_streaming(url))
+Data = CSV.read(download(url))
 
 out_ip = qreg(@formula(foodexp~income), Data, IP())
 out_irls = qreg(@formula(foodexp~income), Data, IRLS())
@@ -9,7 +9,7 @@ out_irls = qreg(@formula(foodexp~income), Data, IRLS())
 
 #=
 ...... Interior point ......
-DataFrameRegressionModel{QRegModel,Float64}:
+TableRegressionModel{QRegModel,Float64}:
 
 Coefficients:
              Estimate Std.Error t value
@@ -17,7 +17,7 @@ Coefficients:
 income       0.560181 0.0131756 42.5164
 
 .......... IRLS ............
-DataFrameRegressionModel{QRegModel,Float64}:
+TableRegressionModel{QRegModel,Float64}:
 
 Coefficients:
              Estimate Std.Error t value
