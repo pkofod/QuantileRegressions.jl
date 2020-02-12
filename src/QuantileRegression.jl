@@ -28,14 +28,16 @@ module QuantileRegression
     include("IRLS.jl")
     include("Covariance.jl")
 
-    function qreg(f::FormulaTerm, df::AbstractDataFrame, q, s::Solver = IP())
+    function qreg(f::FormulaTerm, df::AbstractDataFrame, q, s::Solver = IP();beta=nothing)
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
         mr = response(mf)
-        coef = qreg_coef(mr, mm.m, q, s)
-        vcov = qreg_vcov(mr, mm.m, coef, q)
+        if beta === nothing
+            beta = qreg_coef(mr, mm.m, q, s)
+        end
+        vcov = qreg_vcov(mr, mm.m, beta, q)
         stderror = sqrt.(diag(vcov))
-        return TableRegressionModel(QRegModel(coef, vcov, stderror, q), mf, mm)
+        return TableRegressionModel(QRegModel(beta, vcov, stderror, q), mf, mm)
     end
     qreg(f::FormulaTerm, df::AbstractDataFrame, s::Solver) = qreg(f, df, 0.5, s)
 
