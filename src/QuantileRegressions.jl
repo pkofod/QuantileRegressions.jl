@@ -1,4 +1,4 @@
-module QuantileRegression
+module QuantileRegressions
 
     import StatsModels: TableRegressionModel, FormulaTerm, coef, @formula
     export qreg, coef, vcov, stderr, quantiles, IP, IRLS, @formula

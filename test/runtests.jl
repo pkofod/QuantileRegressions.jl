@@ -1,4 +1,4 @@
-using QuantileRegression
+using QuantileRegressions
 using DataFrames, CSV, LinearAlgebra
 using Test
 

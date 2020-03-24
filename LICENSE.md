@@ -10,7 +10,7 @@ All rights reserved.
 Copyright (c) 2013 Vincent Arel-Bundock varel@umich.edu.
 All rights reserved.
 
-Copyright (c) 2015 QuantileRegression.jl Developers
+Copyright (c) 2015 QuantileRegressions.jl Developers
 
 Redistribution and use in source and binary forms, with or without
 modification, are permitted provided that the following conditions are met:

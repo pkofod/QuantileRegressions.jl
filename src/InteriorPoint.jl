@@ -3,7 +3,7 @@
 # Translated from Ox to Matlab by Paul Eilers 1999
 # Modified by Roger Koenker 2000
 # More changes by Paul Eilers 2004
-# QuantileRegression.jl developers 2015
+# QuantileRegressions.jl developers 2015
 #
 # The functions in this file is released under the BSD-3 license, although the original
 # versions were not. Permissing was given to Patrick Kofod Mogensen by Roger Koenker and

@@ -1,4 +1,4 @@
-using GLM, QuantileRegression, CSV, Winston, StatsBase
+using GLM, QuantileRegressions, CSV, Winston, StatsBase
 
 # Load data
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
@@ -33,4 +33,4 @@ add(p, βτ, βols, ci_low, ci_high, lgnd)
 setattr(p, "title" , "Quantile regression: Food Expenditure ~ Income")
 setattr(p, "xlabel", "Quantiles")
 setattr(p, "ylabel", "Coefficient on Income")
-savefig(p, Pkg.dir("QuantileRegression")"/examples/qreg_example_plot.png")
+savefig(p, Pkg.dir("QuantileRegressions")"/examples/qreg_example_plot.png")

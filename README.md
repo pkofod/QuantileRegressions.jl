@@ -1,13 +1,13 @@
-[![Coverage Status](https://coveralls.io/repos/pkofod/QuantileRegression.jl/badge.svg?branch=master)](https://coveralls.io/r/pkofod/QuantileRegression.jl?branch=master)
-[![Build Status](https://travis-ci.org/pkofod/QuantileRegression.jl.svg?branch=master)](https://travis-ci.org/pkofod/QuantileRegression.jl)
+[![Coverage Status](https://coveralls.io/repos/pkofod/QuantileRegressions.jl/badge.svg?branch=master)](https://coveralls.io/r/pkofod/QuantileRegressions.jl?branch=master)
+[![Build Status](https://travis-ci.org/pkofod/QuantileRegressions.jl.svg?branch=master)](https://travis-ci.org/pkofod/QuantileRegressions.jl)
 
 # Quantile regression in the Julia language
 
 A very simple (and mostly untested) implementation of quantile regression.
 
-* Install using `Pkg.clone("https://github.com/pkofod/QuantileRegression.jl")`
+* Install using `Pkg.clone("https://github.com/pkofod/QuantileRegressions.jl")`
 * Main author: Patrick Kofod Mogensen
-* Contact: Use the [https://github.com/pkofod/QuantileRegression.jl/issues](issues) page
+* Contact: Use the [https://github.com/pkofod/QuantileRegressions.jl/issues](issues) page
 * License: BSD-3
 
 # Example
@@ -19,7 +19,7 @@ The file ``examples/qreg_example.jl`` shows how to use the functions provided he
 We are interested in the relationship between income and expenditures on food for a sample of working class Belgian households in 1857 (the Engel data), so we estimate a least absolute deviation model.
 
 ```jldoctest
-julia> using QuantileRegression
+julia> using QuantileRegressions
 
 julia> # Load data
        url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
@@ -50,7 +50,7 @@ julia> df = readtable(download(url))
 
 julia> # Fit least absolute deviation model (quantile  = .5)
        ResultQR = qreg(@formula(foodexp~income), df, .5)
-StatsModels.TableRegressionModel{QuantileRegression.QRegModel,Array{Float64,2}}
+StatsModels.TableRegressionModel{QuantileRegressions.QRegModel,Array{Float64,2}}
 
 foodexp ~ 1 + income
 
@@ -81,4 +81,4 @@ We can also compute and plot (using Julia's Winston) results for various quantil
 
 # History
 This package was originally created as a port of the reweighed least squares code by Vincent Arel-Bundock
-from the python project [statsmodels](https://github.com/statsmodels/statsmodels). All contributions can be seen via the [contributors](https://github.com/pkofod/QuantileRegression.jl/graphs/contributors) page.
+from the python project [statsmodels](https://github.com/statsmodels/statsmodels). All contributions can be seen via the [contributors](https://github.com/pkofod/QuantileRegressions.jl/graphs/contributors) page.

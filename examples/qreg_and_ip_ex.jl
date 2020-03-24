@@ -1,6 +1,6 @@
-using QuantileRegression
+using QuantileRegressions
 using DataFrames, CSV
-cd(joinpath(dirname(pathof(QuantileRegression)), "..", "examples"))
+cd(joinpath(dirname(pathof(QuantileRegressions)), "..", "examples"))
 df = CSV.read("engel.csv")
 
 
