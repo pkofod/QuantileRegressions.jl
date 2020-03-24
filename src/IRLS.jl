@@ -9,8 +9,8 @@ function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
     xstar = copy(X)
     diff = Inf
 
-    beta0 = Array{Float64}(undef, p)
-    beta  = Array{Float64}(undef, p)
+    beta0 = zeros(p)
+    beta  = zeros(p)
     xtx   = Array{Float64}(undef, p, p)
     xty   = Array{Float64}(undef, p)
     xbeta = Array{Float64}(undef, n)
@@ -22,7 +22,7 @@ function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
 
             mul!(xtx, xstar', X)
             mul!(xty, xstar', y)
-            beta = xtx \ xty
+            beta .= xtx \ xty
             mul!(xbeta, X, beta)
 
             for i in 1:n
