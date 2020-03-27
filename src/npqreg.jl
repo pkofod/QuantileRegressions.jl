@@ -1,6 +1,7 @@
-function npqreg(y, x, tau; m=50, h=2)
-
-	xrange = collect(range(extrema(x)..., length=m))
+function npqreg(y, x, tau; m=50, h=2, xrange=nothing)
+	if xrange = nothing
+		xrange = collect(range(extrema(x)..., length=m))
+	end
 	z = copy(x)
 	Z = hcat(fill(1, length(x)), z)
 	
