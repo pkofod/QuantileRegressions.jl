@@ -1,5 +1,5 @@
 function npqreg(y, x, tau; m=50, h=2, xrange=nothing)
-	if xrange = nothing
+	if xrange === nothing
 		xrange = collect(range(extrema(x)..., length=m))
 	end
 	z = copy(x)
