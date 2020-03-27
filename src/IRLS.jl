@@ -4,7 +4,7 @@
 # Original code from the python statsmodels project
 # https://github.com/statsmodels/statsmodels
 
-function qreg_coef(y::Vector, X::Matrix, q::Real, s::IRLS)
+function qreg_coef(y, X::Matrix, q::Real, s::IRLS)
     n, p = size(X)
     xstar = copy(X)
     diff = Inf

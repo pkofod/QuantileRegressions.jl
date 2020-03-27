@@ -22,7 +22,7 @@ function bound(x, dx)
     return b
 end
 
-function qreg_coef(Y::Vector, X::Matrix, p, s::IP)
+function qreg_coef(Y, X::Matrix, p, s::IP)
 # input: X is an n x k matrix of exogenous regressors,
 #        Y is an n x 1 vector of outcome variables
 #        p \in (0,1) is the quantile of interest
