@@ -10,19 +10,19 @@
 # Paul Eilers on April 24 2015 via E-mail. Original mail correspondences can be provided
 # upon request.
 
-function bound(x, dx)
+function bound!(d, x, dx)
 # Fill vector with allowed step lengths
 # Replace with -x/dx for negative dx
-    b = 1e20 .+ 0.0 * x
-    for i = 1:length(dx)
+    d .= 1e20
+    @inbounds for i = 1:length(dx)
         if dx[i] < 0.0
-            @inbounds b[i] = -x[i] / dx[i]
+            d[i] = -x[i] / dx[i]
         end
     end
-    return b
+    return d
 end
 
-function qreg_coef(Y, X::Matrix, p, s::IP)
+function qreg_coef(Y, X::Matrix, p, method::IP)
 # input: X is an n x k matrix of exogenous regressors,
 #        Y is an n x 1 vector of outcome variables
 #        p \in (0,1) is the quantile of interest
@@ -44,77 +44,85 @@ beta = 0.99995
 small = 1e-6
 max_it = 50
 n, m = size(X)
-
 # Generate inital feasible point
 s = u - x
 y = -X\Y
+dy = copy(y)
 r = c - X*y
 BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
 z = r .* (r .> 0.0)
-w = z - r
-gap = LinearAlgebra.BLAS.dot(c, x) - LinearAlgebra.BLAS.dot(y, b) + LinearAlgebra.BLAS.dot(w, u)
+w = z .- r
 
+gap = dot(c, x) - dot(y, b) + dot(w, u)
+
+# set up caches
+Xtmp = copy(X)
+xinv, xi = copy(x), copy(x)
+sinv = copy(s)
+q = copy(z)
+dx, ds, dz, dw = copy(w), copy(w), copy(w), copy(w)
+fx, fs, fz, fw = copy(w), copy(w), copy(w), copy(w)
+dxdz, dsdw = copy(w), copy(w)
+tmp = copy(w)
 # Start iterations
-it = 0
 for it = 1:max_it
     #   Compute affine step
-    q = 1 ./ (z ./ x + w ./ s)
-    r = z - w
+    @. q = 1 / (z / x + w / s)
+    @. r = z - w
     Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
-    # AQtF = @atleastversion(VERSION)
-    AQtF = qr(Q*X, Val(true)) # PE 2004
+    AQtF = qr(mul!(Xtmp, Q, X), Val(true)) # PE 2004
     rhs = Q*r        # "
-    dy = AQtF\rhs   # "
-    dx = q.*(X*dy - r)
-    ds = -dx
-    dz = -z .* (1 .+ dx ./ x)
-    dw = -w .* (1 .+ ds ./ s)
+    ldiv!(dy, AQtF, rhs)
+    mul!(tmp, X, dy)
+    @. dx = q*(tmp - r)
+    @. ds = -dx
+    @. dz = -z * (1 + dx / x)
+    @. dw = -w * (1 + ds / s)
 
     # Compute maximum allowable step lengths
-    fx = bound(x, dx)
-    fs = bound(s, ds)
-    fw = bound(w, dw)
-    fz = bound(z, dz)
-    fpv = min.(fx, fs)
-    fdv = min.(fw, fz)
-    fp = min.(minimum(beta * fpv), 1)
-    fd = min.(minimum(beta * fdv), 1)
-
+    bound!(fx, x, dx)
+    bound!(fs, s, ds)
+    bound!(fw, w, dw)
+    bound!(fz, z, dz)
+    @. tmp = min(fx, fs)
+    fp = min(beta*minimum(tmp), 1)
+    @. tmp = min(fw, fz)
+    fd = min(beta*minimum(tmp), 1)
     # If full step is feasible, take it. Otherwise modify it
-    if min.(fp, fd) < 1.0
+    if min(fp, fd) < 1.0
 
         # Update mu
-        mu = LinearAlgebra.BLAS.dot(z, x) + LinearAlgebra.BLAS.dot(w, s)
-        g = LinearAlgebra.BLAS.dot(z + fd*dz, x + fp*dx) + LinearAlgebra.BLAS.dot(w + fd*dw, s + fp*ds)
+        mu = dot(z, x) + dot(w, s)
+        g = dot(z .+ fd.*dz, x .+ fp.*dx) + dot(w .+ fd.*dw, s .+ fp.*ds)
         mu = mu * (g / mu)^3 / (2 * n)
 
         # Compute modified step
-        dxdz = dx .* dz
-        dsdw = ds .* dw
-        xinv = 1 ./ x
-        sinv = 1 ./ s
-        xi = mu .* (xinv - sinv)
+        @. dxdz = dx * dz
+        @. dsdw = ds * dw
+        @. xinv = 1 / x
+        @. sinv = 1 / s
+        @. xi = mu * (xinv - sinv)
         #rhs = rhs + Q * (dxdz - dsdw - xi)
-        BLAS.axpy!(1.0, Q * (dxdz - dsdw - xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
+        BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
 
-        dy = AQtF\rhs
-        dx = q .* (X*dy + xi - r - dxdz + dsdw)
-        ds = -dx
-        for i = 1:length(dz)
-            dz[i] = mu * xinv[i] - z[i] - xinv[i] * z[i] * dx[i] - dxdz[i]
-            dw[i] = mu * sinv[i] - w[i] - sinv[i] * w[i] * ds[i] - dsdw[i]
+        ldiv!(dy, AQtF, rhs)
+        mul!(tmp, X, dy)
+        @. dx = q * (tmp + xi - r - dxdz + dsdw)
+        @. ds = -dx
+        for i = eachindex(dz, dw)
+            @inbounds dz[i] = mu * xinv[i] - z[i] - xinv[i] * z[i] * dx[i] - dxdz[i]
+            @inbounds dw[i] = mu * sinv[i] - w[i] - sinv[i] * w[i] * ds[i] - dsdw[i]
         end
 
         # Compute maximum allowable step lengths
-        fx = bound(x, dx)
-        fs = bound(s, ds)
-        fw = bound(w, dw)
-        fz = bound(z, dz)
-        fp = min.(fx, fs)
-        fd = min.(fw, fz)
-        fp = min.(minimum(beta .* fp), 1)
-        fd = min.(minimum(beta .* fd), 1)
-
+        bound!(fx, x, dx)
+        bound!(fs, s, ds)
+        bound!(fw, w, dw)
+        bound!(fz, z, dz)
+        @. tmp = min(fx, fs)
+        fp = min(beta*minimum(tmp), 1)
+        @. tmp = min(fw, fz)
+        fd = min(beta*minimum(tmp), 1)
     end
 
     # Take the steps
@@ -124,7 +132,7 @@ for it = 1:max_it
     BLAS.axpy!(fd, dw, w)
     BLAS.axpy!(fd, dz, z)
 
-    gap = LinearAlgebra.BLAS.dot(c, x) - LinearAlgebra.BLAS.dot(y, b) + LinearAlgebra.BLAS.dot(w, u)
+    gap = dot(c, x) - dot(y, b) + dot(w, u)
 
     if gap < small
         break
