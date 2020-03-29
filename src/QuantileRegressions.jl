@@ -17,12 +17,12 @@ module QuantileRegressions
     struct IP <: Solver
     end
 
-    struct IRLS <: Solver
-        tol
-        maxIter
-        threshold
+    struct IRLS{T} <: Solver
+        tol::T
+        threshold::T
+        maxiter::Integer
     end
-    IRLS(;tol::Real = 1e-12, maxIter::Integer = 1_000, threshold::Real = 1e-5) = IRLS(tol, maxIter, threshold)
+    IRLS(;tol::Real = 1e-12, maxiter::Integer = 1_000, threshold::Real = 1e-5) = IRLS(tol, threshold, maxiter)
 
     include("InteriorPoint.jl")
     include("IRLS.jl")

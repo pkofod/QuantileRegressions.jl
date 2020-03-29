@@ -4,7 +4,7 @@
 # Original code from the python statsmodels project
 # https://github.com/statsmodels/statsmodels
 
-function qreg_coef(y, X::Matrix, q::Real, s::IRLS)
+function qreg_coef(y, X::Matrix, q::Real, method::IRLS)
     n, p = size(X)
     xstar = copy(X)
     diff = Inf
@@ -16,8 +16,8 @@ function qreg_coef(y, X::Matrix, q::Real, s::IRLS)
     xbeta = Array{Float64}(undef, n)
     resid = Array{Float64}(undef, n)
 
-    for itr in 1:s.maxIter
-        if diff > s.tol
+    for itr in 1:method.maxiter
+        if diff > method.tol
             copyto!(beta0, beta)
 
             mul!(xtx, xstar', X)
@@ -25,13 +25,11 @@ function qreg_coef(y, X::Matrix, q::Real, s::IRLS)
             beta .= xtx \ xty
             mul!(xbeta, X, beta)
 
-            for i in 1:n
-                @inbounds resid[i] = y[i] - xbeta[i]
-            end
+            @. resid = y - xbeta
 
             for i in 1:n
-                if abs(resid[i]) < s.threshold
-                    @inbounds resid[i] = sign(resid[i]) * s.threshold
+                if abs(resid[i]) < method.threshold
+                    @inbounds resid[i] = sign(resid[i]) * method.threshold
                 end
                 if resid[i] < 0
                     @inbounds resid[i] = abs(q * resid[i])
