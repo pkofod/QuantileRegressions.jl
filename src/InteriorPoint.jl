@@ -29,6 +29,7 @@ function qreg_coef(Y, X::Matrix, p, method::IP)
 # Output: p^{th} regression quantiles.
 # Construct the dual problem of quantile regression
 c = -Y
+T = eltype(X)
 
 m = size(X, 1)
 u = ones(m)
@@ -70,9 +71,11 @@ for it = 1:max_it
     @. q = 1 / (z / x + w / s)
     @. r = z - w
     Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
-    AQtF = qr(mul!(Xtmp, Q, X), Val(true)) # PE 2004
+    AQtF = qr(mul!(Xtmp, Q, X)) # PE 2004
     rhs = Q*r        # "
     ldiv!(dy, AQtF, rhs)
+   # dy .= AQtF\rhs
+
     mul!(tmp, X, dy)
     @. dx = q*(tmp - r)
     @. ds = -dx
@@ -93,7 +96,10 @@ for it = 1:max_it
 
         # Update mu
         mu = dot(z, x) + dot(w, s)
-        g = dot(z .+ fd.*dz, x .+ fp.*dx) + dot(w .+ fd.*dw, s .+ fp.*ds)
+        g = T(0)
+        for i = 1:length(z)
+          @inbounds g += (z[i] + fd[i]*dz[i])*(x[i] + fp[i]*dx[i]) + (w[i] + fd[i]*dw[i])*(s[i]+fp[i]*ds[i])
+        end
         mu = mu * (g / mu)^3 / (2 * n)
 
         # Compute modified step
@@ -102,10 +108,11 @@ for it = 1:max_it
         @. xinv = 1 / x
         @. sinv = 1 / s
         @. xi = mu * (xinv - sinv)
+
         #rhs = rhs + Q * (dxdz - dsdw - xi)
         BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
-
         ldiv!(dy, AQtF, rhs)
+
         mul!(tmp, X, dy)
         @. dx = q * (tmp + xi - r - dxdz + dsdw)
         @. ds = -dx
