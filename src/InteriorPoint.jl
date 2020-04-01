@@ -102,7 +102,7 @@ for it = 1:max_it
         mu = dot(z, x) + dot(w, s)
         g = T(0)
         for i = 1:length(z)
-          @inbounds g += (z[i] + fd[i]*dz[i])*(x[i] + fp[i]*dx[i]) + (w[i] + fd[i]*dw[i])*(s[i]+fp[i]*ds[i])
+          @inbounds g += (z[i] + fd*dz[i])*(x[i] + fp*dx[i]) + (w[i] + fd*dw[i])*(s[i]+fp*ds[i])
         end
         mu = mu * (g / mu)^3 / (2 * n)
 
