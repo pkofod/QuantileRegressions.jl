@@ -47,7 +47,7 @@ max_it = 50
 n, m = size(X)
 # Generate inital feasible point
 s = u - x
-y = -X\Y
+y = -((X'X)\(X'Y))
 dy = copy(y)
 r = c - X*y
 BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
@@ -58,6 +58,7 @@ gap = dot(c, x) - dot(y, b) + dot(w, u)
 
 # set up caches
 Xtmp = copy(X)
+XtX  = similar(X, m, m)
 xinv, xi = copy(x), copy(x)
 sinv = copy(s)
 q = copy(z)
@@ -65,16 +66,19 @@ dx, ds, dz, dw = copy(w), copy(w), copy(w), copy(w)
 fx, fs, fz, fw = copy(w), copy(w), copy(w), copy(w)
 dxdz, dsdw = copy(w), copy(w)
 tmp = copy(w)
+rtmp = copy(r)
+Xtqr = similar(r, m)
 # Start iterations
 for it = 1:max_it
     #   Compute affine step
     @. q = 1 / (z / x + w / s)
     @. r = z - w
-    Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
-    AQtF = qr(mul!(Xtmp, Q, X)) # PE 2004
-    rhs = Q*r        # "
-    ldiv!(dy, AQtF, rhs)
-   # dy .= AQtF\rhs
+
+    @. Xtmp = q * X
+    mul!(XtX, Xtmp', X)
+    F = cholesky!(Symmetric(XtX))
+    mul!(Xtqr, Xtmp', r)
+    ldiv!(dy, F, Xtqr)
 
     mul!(tmp, X, dy)
     @. dx = q*(tmp - r)
@@ -109,17 +113,15 @@ for it = 1:max_it
         @. sinv = 1 / s
         @. xi = mu * (xinv - sinv)
 
-        #rhs = rhs + Q * (dxdz - dsdw - xi)
-        BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
-        ldiv!(dy, AQtF, rhs)
+        @. rtmp = r + dxdz - dsdw - xi
+        mul!(Xtqr, Xtmp', rtmp)
 
+        ldiv!(dy, F, Xtqr)
         mul!(tmp, X, dy)
         @. dx = q * (tmp + xi - r - dxdz + dsdw)
         @. ds = -dx
-        for i = eachindex(dz, dw)
-            @inbounds dz[i] = mu * xinv[i] - z[i] - xinv[i] * z[i] * dx[i] - dxdz[i]
-            @inbounds dw[i] = mu * sinv[i] - w[i] - sinv[i] * w[i] * ds[i] - dsdw[i]
-        end
+        @. dz = mu * xinv - z - xinv * z * dx - dxdz
+        @. dw = mu * sinv - w - sinv * w * ds - dsdw
 
         # Compute maximum allowable step lengths
         bound!(fx, x, dx)
