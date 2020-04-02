@@ -134,7 +134,7 @@ for it = 1:max_it
         @. xi = mu * (xinv - sinv)
 
         if method.cholesky
-            @. rtmp = r + dxdz - dsdw - x
+            @. rtmp = r + dxdz - dsdw - xi
             mul!(Xtqr, Xtmp', rtmp)
 
             ldiv!(dy, F, Xtqr)

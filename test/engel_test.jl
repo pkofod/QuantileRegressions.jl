@@ -1,14 +1,14 @@
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
 Data = CSV.read(download(url))
 
+out_ip_true = qreg(@formula(foodexp~income), Data, IP(true))
 out_ip = qreg(@formula(foodexp~income), Data, IP())
 out_ip_false = qreg(@formula(foodexp~income), Data, IP(false))
-out_ip_true = qreg(@formula(foodexp~income), Data, IP(true))
 out_irls = qreg(@formula(foodexp~income), Data, IRLS())
 
+@test norm( out_ip_true.model.beta - [81.4822; 0.560181]) < 1e-4
 @test norm( out_ip.model.beta - [81.4822; 0.560181]) < 1e-4
 @test norm( out_ip_false.model.beta - [81.4822; 0.560181]) < 1e-4
-@test norm( out_ip_true.model.beta - [81.4822; 0.560181]) < 1e-4
 @test norm( out_irls.model.beta - [81.4823; 0.560181]) < 1e-4
 
 #=
