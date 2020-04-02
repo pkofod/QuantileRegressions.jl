@@ -2,10 +2,9 @@
 [![Build Status](https://travis-ci.org/pkofod/QuantileRegressions.jl.svg?branch=master)](https://travis-ci.org/pkofod/QuantileRegressions.jl)
 
 # Quantile regression in the Julia language
+Implementation of quantile regression.
 
-A very simple (and mostly untested) implementation of quantile regression.
-
-* Install using `Pkg.clone("https://github.com/pkofod/QuantileRegressions.jl")`
+* Install using `]add QuantileRegressions`
 * Main author: Patrick Kofod Mogensen
 * Contact: Use the [https://github.com/pkofod/QuantileRegressions.jl/issues](issues) page
 * License: BSD-3
