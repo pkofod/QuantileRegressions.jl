@@ -1,7 +1,7 @@
 [![Coverage Status](https://coveralls.io/repos/pkofod/QuantileRegressions.jl/badge.svg?branch=master)](https://coveralls.io/r/pkofod/QuantileRegressions.jl?branch=master)
 [![Build Status](https://travis-ci.org/pkofod/QuantileRegressions.jl.svg?branch=master)](https://travis-ci.org/pkofod/QuantileRegressions.jl)
 
-# Quantile regression in the Julia language
+# Quantile Regression
 Implementation of quantile regression.
 
 * Install using `]add QuantileRegressions`
