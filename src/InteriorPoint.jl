@@ -56,6 +56,7 @@ if method.cholesky
 else
     y = -X\Y
 end
+
 dy = copy(y)
 r = c - X*y
 BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
@@ -135,11 +136,13 @@ for it = 1:max_it
         if method.cholesky
             @. rtmp = r + dxdz - dsdw - x
             mul!(Xtqr, Xtmp', rtmp)
+
             ldiv!(dy, F, Xtqr)
         else
             BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
             ldiv!(dy, AQtF, rhs)
         end
+
         mul!(tmp, X, dy)
         @. dx = q * (tmp + xi - r - dxdz + dsdw)
         @. ds = -dx
