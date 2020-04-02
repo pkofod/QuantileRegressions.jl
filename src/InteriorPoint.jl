@@ -10,6 +10,11 @@
 # Paul Eilers on April 24 2015 via E-mail. Original mail correspondences can be provided
 # upon request.
 
+struct IP <: Solver
+    cholesky::Bool
+end
+IP() = IP(false)
+
 function bound!(d, x, dx)
 # Fill vector with allowed step lengths
 # Replace with -x/dx for negative dx
@@ -35,7 +40,6 @@ m = size(X, 1)
 u = ones(m)
 x = (1 - p) .* u
 b = X'x
-
 # Solve a linear program by the interior point method:
 # min(c * u), s.t. A * x = b and 0 < x < u
 # An initial feasible solution has to be provided as x
@@ -47,7 +51,12 @@ max_it = 50
 n, m = size(X)
 # Generate inital feasible point
 s = u - x
-y = -((X'X)\(X'Y))
+if method.cholesky
+    y = -((X'X)\(X'Y))
+else
+    y = -X\Y
+end
+
 dy = copy(y)
 r = c - X*y
 BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
@@ -58,7 +67,9 @@ gap = dot(c, x) - dot(y, b) + dot(w, u)
 
 # set up caches
 Xtmp = copy(X)
-XtX  = similar(X, m, m)
+if method.cholesky
+    XtX  = similar(X, m, m)
+end
 xinv, xi = copy(x), copy(x)
 sinv = copy(s)
 q = copy(z)
@@ -66,19 +77,28 @@ dx, ds, dz, dw = copy(w), copy(w), copy(w), copy(w)
 fx, fs, fz, fw = copy(w), copy(w), copy(w), copy(w)
 dxdz, dsdw = copy(w), copy(w)
 tmp = copy(w)
-rtmp = copy(r)
-Xtqr = similar(r, m)
+if method.cholesky
+    rtmp = copy(r)
+    Xtqr = similar(r, m)
+end
 # Start iterations
 for it = 1:max_it
     #   Compute affine step
     @. q = 1 / (z / x + w / s)
     @. r = z - w
-
-    @. Xtmp = q * X
-    mul!(XtX, Xtmp', X)
-    F = cholesky!(Symmetric(XtX))
-    mul!(Xtqr, Xtmp', r)
-    ldiv!(dy, F, Xtqr)
+    if method.cholesky
+        @. Xtmp = q * X
+        mul!(XtX, Xtmp', X)
+        F = cholesky!(Symmetric(XtX))
+        mul!(Xtqr, Xtmp', r)
+        ldiv!(dy, F, Xtqr)
+    else
+        Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
+        AQtF = qr(mul!(Xtmp, Q, X)) # PE 2004
+        rhs = Q*r        # "
+        ldiv!(dy, AQtF, rhs)
+    end
+   # dy .= AQtF\rhs
 
     mul!(tmp, X, dy)
     @. dx = q*(tmp - r)
@@ -113,10 +133,16 @@ for it = 1:max_it
         @. sinv = 1 / s
         @. xi = mu * (xinv - sinv)
 
-        @. rtmp = r + dxdz - dsdw - xi
-        mul!(Xtqr, Xtmp', rtmp)
+        if method.cholesky
+            @. rtmp = r + dxdz - dsdw - xi
+            mul!(Xtqr, Xtmp', rtmp)
 
-        ldiv!(dy, F, Xtqr)
+            ldiv!(dy, F, Xtqr)
+        else
+            BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
+            ldiv!(dy, AQtF, rhs)
+        end
+
         mul!(tmp, X, dy)
         @. dx = q * (tmp + xi - r - dxdz + dsdw)
         @. ds = -dx
