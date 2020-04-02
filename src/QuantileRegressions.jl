@@ -14,9 +14,6 @@ module QuantileRegressions
 
     abstract type Solver end
 
-    struct IP <: Solver
-    end
-
     struct IRLS{T} <: Solver
         tol::T
         threshold::T
