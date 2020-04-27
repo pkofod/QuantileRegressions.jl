@@ -1,4 +1,5 @@
 function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
+	T = eltype(x)
 	if xrange === nothing
 		xrange = collect(range(extrema(x)..., length=m))
 	end
@@ -11,8 +12,7 @@ function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
 	  z .= x .- xrange[i]
 	  Z[:, 2] .= z
 
-	  w = pdf.(Normal(), z./h)
-
+	  w = clamp.(pdf.(Normal(), z./h), eps(T), T(Inf))
 	  wy = w.*y
 	  wZ = w.*Z 
 

@@ -46,8 +46,8 @@ b = X'x
 
 # Set some constants
 beta = 0.99995
-small = 1e-6
-max_it = 50
+small = 1e-8
+max_it = 500
 n, m = size(X)
 # Generate inital feasible point
 s = u - x
