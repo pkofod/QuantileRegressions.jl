@@ -5,16 +5,17 @@ function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
 	end
 	z = copy(x)
 	Z = hcat(fill(1, length(x)), z)
-	
 	ghat = copy(xrange)
 	dghat = copy(xrange)
 	for i in 1:length(xrange)
 	  z .= x .- xrange[i]
 	  Z[:, 2] .= z
 
-	  w = clamp.(pdf.(Normal(), z./h), eps(T), T(Inf))
-	  wy = w.*y
-	  wZ = w.*Z 
+	  w = pdf.(Normal(), z./h)
+	  widx = findall(x-> x > eps(T), w)
+	  w = w[widx]
+	  wy = w.*y[widx]
+	  wZ = w.*Z[widx, :]
 
 	  r = qreg_coef(wy, wZ, tau, method)
 
