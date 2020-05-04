@@ -46,7 +46,7 @@ b = X'x
 
 # Set some constants
 beta = 0.99995
-small = 1e-8
+small = 1e-6
 max_it = 500
 n, m = size(X)
 # Generate inital feasible point
@@ -56,7 +56,6 @@ if method.cholesky
 else
     y = -X\Y
 end
-
 dy = copy(y)
 r = c - X*y
 BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
