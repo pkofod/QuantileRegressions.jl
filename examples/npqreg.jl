@@ -1,5 +1,5 @@
 using QuantileRegressions, Distributions, CSV
-mycyle = CSV.read("/home/pkofod/mcycle.csv")
+mycyle = CSV.read("mcycle.csv")
 x = mycyle.times
 y = mycyle.accel
 
