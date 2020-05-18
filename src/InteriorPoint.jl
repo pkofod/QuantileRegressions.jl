@@ -90,12 +90,14 @@ for it = 1:max_it
         mul!(XtX, Xtmp', X)
         F = cholesky!(Symmetric(XtX))
         mul!(Xtqr, Xtmp', r)
-        ldiv!(dy, F, Xtqr)
+        dy .= F\Xtqr
+        #ldiv!(dy, F, Xtqr)
     else
         Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
         AQtF = qr(mul!(Xtmp, Q, X)) # PE 2004
         rhs = Q*r        # "
-        ldiv!(dy, AQtF, rhs)
+        dy .= AQtF\rhs
+        #ldiv!(dy, AQtF, rhs)
     end
    # dy .= AQtF\rhs
 
@@ -136,10 +138,12 @@ for it = 1:max_it
             @. rtmp = r + dxdz - dsdw - xi
             mul!(Xtqr, Xtmp', rtmp)
 
-            ldiv!(dy, F, Xtqr)
+            dy .= F\Xtqr
+            #ldiv!(dy, F, Xtqr)
         else
             BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
-            ldiv!(dy, AQtF, rhs)
+            dy .= AQtF\rhs
+            #ldiv!(dy, AQtF, rhs)
         end
 
         mul!(tmp, X, dy)
