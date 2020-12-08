@@ -1,5 +1,5 @@
 url = "http://vincentarelbundock.github.io/Rdatasets/csv/quantreg/engel.csv"
-Data = CSV.read(download(url))
+Data = CSV.read(download(url), DataFrame)
 
 out_ip_true = qreg(@formula(foodexp~income), Data, IP(true))
 out_ip = qreg(@formula(foodexp~income), Data, IP())

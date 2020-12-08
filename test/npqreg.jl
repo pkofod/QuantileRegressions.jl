@@ -1,6 +1,6 @@
 using QuantileRegressions, CSV
 @testset "npqreg" begin
-	mycyle = CSV.read("../examples/mcycle.csv")
+	mycyle = CSV.read("../examples/mcycle.csv", DataFrame)
 	x = mycyle.times
 	y = mycyle.accel
 
