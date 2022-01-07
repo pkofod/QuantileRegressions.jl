@@ -106,7 +106,6 @@ for it = 1:max_it
     @. ds = -dx
     @. dz = -z * (1 + dx / x)
     @. dw = -w * (1 + ds / s)
-
     # Compute maximum allowable step lengths
     bound!(fx, x, dx)
     bound!(fs, s, ds)
@@ -118,26 +117,22 @@ for it = 1:max_it
     fd = min(beta*minimum(tmp), 1)
     # If full step is feasible, take it. Otherwise modify it
     if min(fp, fd) < 1.0
-
         # Update mu
-        mu = dot(z, x) + dot(w, s)
-        g = T(0)
+        g0 = dot(z, x) + dot(w, s)
+        gγPγD = T(0)
         for i = 1:length(z)
-          @inbounds g += (z[i] + fd*dz[i])*(x[i] + fp*dx[i]) + (w[i] + fd*dw[i])*(s[i]+fp*ds[i])
+          @inbounds gγPγD += (z[i] + fd*dz[i])*(x[i] + fp*dx[i]) + (w[i] + fd*dw[i])*(s[i]+fp*ds[i])
         end
-        mu = mu * (g / mu)^3 / (2 * n)
-
+        mu = (gγPγD / g0)^3 * g0/(2n)
         # Compute modified step
         @. dxdz = dx * dz
         @. dsdw = ds * dw
         @. xinv = 1 / x
         @. sinv = 1 / s
         @. xi = mu * (xinv - sinv)
-
         if method.cholesky
             @. rtmp = r + dxdz - dsdw - xi
             mul!(Xtqr, Xtmp', rtmp)
-
             dy .= F\Xtqr
             #ldiv!(dy, F, Xtqr)
         else
@@ -149,9 +144,8 @@ for it = 1:max_it
         mul!(tmp, X, dy)
         @. dx = q * (tmp + xi - r - dxdz + dsdw)
         @. ds = -dx
-        @. dz = mu * xinv - z - xinv * z * dx - dxdz
-        @. dw = mu * sinv - w - sinv * w * ds - dsdw
-
+        @. dz = (mu - z * dx)*xinv - z - dxdz
+        @. dw = (mu - w * ds)*sinv - w - dsdw
         # Compute maximum allowable step lengths
         bound!(fx, x, dx)
         bound!(fs, s, ds)
@@ -171,8 +165,7 @@ for it = 1:max_it
     BLAS.axpy!(fd, dz, z)
 
     gap = dot(c, x) - dot(y, b) + dot(w, u)
-
-    if gap < small
+    if gap < small || isnan(gap)
         break
     end
 end
