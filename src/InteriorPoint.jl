@@ -37,8 +37,8 @@ c = -Y
 T = eltype(X)
 
 m = size(X, 1)
-u = ones(m)
-x = (1 - p) .* u
+
+x = fill((1 - p), m)
 b = X'x
 # Solve a linear program by the interior point method:
 # min(c * u), s.t. A * x = b and 0 < x < u
@@ -46,11 +46,11 @@ b = X'x
 
 # Set some constants
 beta = 0.99995
-small = 1e-6
+small = sqrt(eps(eltype(c)))
 max_it = 500
 n, m = size(X)
 # Generate inital feasible point
-s = u - x
+s = 1 .- x
 if method.cholesky
     y = -((X'X)\(X'Y))
 else
@@ -58,11 +58,24 @@ else
 end
 dy = copy(y)
 r = c - X*y
-BLAS.axpy!(0.001, (r .== 0.0).*1.0, r)
-z = r .* (r .> 0.0)
-w = z .- r
+# z and w are the "residuals" but on either
+# side of the "check" we need to flip the sign
+#    BLAS.axpy!(small, (r .== 0.0).*1.0, r)
+#    z = r .* (r .> small)
+#    w = abs.(z .- r)
+z = copy(r)
+w = copy(r)
+for i ∈ eachindex(r)
+    ri = r[i]
+    z[i] = max(ri, 0)
+    w[i] = max(-ri, 0)
+    if abs(ri) <= small
+        z[i] = z[i] + small
+        w[i] = w[i] + small
+    end
+end
 
-gap = dot(c, x) - dot(y, b) + dot(w, u)
+gap = dot(z, x) + dot(s, w)
 
 # set up caches
 Xtmp = copy(X)
@@ -79,12 +92,16 @@ tmp = copy(w)
 if method.cholesky
     rtmp = copy(r)
     Xtqr = similar(r, m)
+else
+    qr_tmp = copy(q)
+    rhs = copy(r)
 end
 # Start iterations
 for it = 1:max_it
     #   Compute affine step
     @. q = 1 / (z / x + w / s)
     @. r = z - w
+
     if method.cholesky
         @. Xtmp = q * X
         mul!(XtX, Xtmp', X)
@@ -93,13 +110,12 @@ for it = 1:max_it
         dy .= F\Xtqr
         #ldiv!(dy, F, Xtqr)
     else
-        Q = Diagonal(sqrt.(q)) # Very efficient to do since Q diagonal
+        @. qr_tmp = sqrt(q)
+        Q = Diagonal(qr_tmp) # Very efficient to do since Q diagonal
         AQtF = qr(mul!(Xtmp, Q, X)) # PE 2004
-        rhs = Q*r        # "
+        @. rhs = qr_tmp*r
         dy .= AQtF\rhs
-        #ldiv!(dy, AQtF, rhs)
     end
-   # dy .= AQtF\rhs
 
     mul!(tmp, X, dy)
     @. dx = q*(tmp - r)
@@ -134,11 +150,10 @@ for it = 1:max_it
             @. rtmp = r + dxdz - dsdw - xi
             mul!(Xtqr, Xtmp', rtmp)
             dy .= F\Xtqr
-            #ldiv!(dy, F, Xtqr)
         else
-            BLAS.axpy!(1.0, Q * (dxdz .- dsdw .- xi), rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
+            @. qr_tmp = qr_tmp * (dxdz .- dsdw .- xi)
+            BLAS.axpy!(1.0, qr_tmp, rhs) # no gemv-wrapper gemv(Q, (dxdz - dsdw - xi), rhs,1,1,n)?
             dy .= AQtF\rhs
-            #ldiv!(dy, AQtF, rhs)
         end
 
         mul!(tmp, X, dy)
@@ -146,6 +161,7 @@ for it = 1:max_it
         @. ds = -dx
         @. dz = (mu - z * dx)*xinv - z - dxdz
         @. dw = (mu - w * ds)*sinv - w - dsdw
+
         # Compute maximum allowable step lengths
         bound!(fx, x, dx)
         bound!(fs, s, ds)
@@ -164,7 +180,8 @@ for it = 1:max_it
     BLAS.axpy!(fd, dw, w)
     BLAS.axpy!(fd, dz, z)
 
-    gap = dot(c, x) - dot(y, b) + dot(w, u)
+    gap = dot(z, x) + dot(s, w)
+
     if gap < small || isnan(gap)
         break
     end

@@ -11,7 +11,7 @@ function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
         z .= x .- xrange[i]
         Z[:, 2] .= z
         w = pdf.(Normal(), z./h)
-        widx = findall(x-> x > eps(T), w)
+        widx = findall(x-> x > sqrt(eps(T)), w)
         if length(widx) > 1
             # more than one observation with positive
             # weights, so we can estimate value and derivative
@@ -31,7 +31,6 @@ function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
                 dghat[i] = NaN
                 continue
             end
-
             w = w[widx]
             wy = w.*y[widx]
             wZ = w.*Z[widx, :]
