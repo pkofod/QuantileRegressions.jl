@@ -13,9 +13,27 @@ function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
 
         w = pdf.(Normal(), z./h)
         widx = findall(x-> x > eps(T), w)
+
         if length(widx) > 1
             # more than one observation with positive
             # weights, so we can estimate value and derivative
+            
+            # first we check that there is actually variation
+            # in the second column
+            variation = false
+            z1 = Z[widx[1], 2]
+            for j = 2:length(widx)
+                if Z[widx[j], 2] !== z1
+                    variation = true
+                    break
+                end
+            end
+            if !variation
+                ghat[i] = qreg_coef(y[widx], fill(1.0, length(widx), 1), tau, method)[1]
+                dghat[i] = NaN
+                continue
+            end
+
             w = w[widx]
             wy = w.*y[widx]
             wZ = w.*Z[widx, :]

@@ -25,6 +25,7 @@ PlotDF = DataFrame(
 
 x = PlotDF[!, :X]
 p = FramedPlot()
+
 βτ   = Curve(x, PlotDF[!, :Y])
 βols = Curve(x, PlotDF[!, :ols] , "color", "red")
 ci_low  = Curve(x, PlotDF[!, :Ymin], "type" , "dash")

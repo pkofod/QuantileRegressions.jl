@@ -1,6 +1,6 @@
 using QuantileRegressions, CSV
 @testset "npqreg" begin
-	mycyle = CSV.read("../examples/mcycle.csv")
+	mycyle = CSV.read("../examples/mcycle.csv", DataFrame)
 	x = mycyle.times
 	y = mycyle.accel
 
@@ -20,4 +20,6 @@ using QuantileRegressions, CSV
 	res = QuantileRegressions.npqreg([y[1]], [x[1]], 0.8; xrange=[x[1].+1], h=0.1)
 	@test isnan(res[2][1])
 	@test isnan(res[3][1])
+
+	@test all(QuantileRegressions.npqreg([1.0,2.0,4.0,5.0], [0.0,0.0,6.0,12.0], 0.3; h=0.001, xrange=[0.0,6.0,12.0])[2] .≈ [1.0, 4.0, 5.0])
 end
