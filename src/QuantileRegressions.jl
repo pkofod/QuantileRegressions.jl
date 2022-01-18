@@ -25,7 +25,7 @@ module QuantileRegressions
     include("IRLS.jl")
     include("Covariance.jl")
     include("npqreg.jl")
-    
+
     function qreg(f::FormulaTerm, df::AbstractDataFrame, q, weights::AbstractVector, s::Solver = IP())
         mf = ModelFrame(f, df)
         mm = ModelMatrix(mf)
@@ -35,12 +35,12 @@ module QuantileRegressions
         coef = qreg_coef(mr, mm.m, q, s)
         vcov = qreg_vcov(mr, mm.m, coef, q)
         stderror = sqrt.(diag(vcov))
-        return TableRegressionModel(QRegModel(coef, vcov, stderror, q), mf, mm)        
+        return TableRegressionModel(QRegModel(coef, vcov, stderror, q), mf, mm)
     end
     function qreg(f::FormulaTerm, df::AbstractDataFrame, q, s::Solver = IP())
         mf = ModelFrame(f, df)
-        mm = ModelMatrix(mf)
-        mr = response(mf)
+        mm = ModelMatrix(mf)::ModelMatrix{Matrix{Float64}}
+        mr = response(mf)::Vector{Float64}
         coef = qreg_coef(mr, mm.m, q, s)
         vcov = qreg_vcov(mr, mm.m, coef, q)
         stderror = sqrt.(diag(vcov))
