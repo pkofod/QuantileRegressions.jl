@@ -3,7 +3,8 @@ module QuantileRegressions
     import StatsModels: TableRegressionModel, FormulaTerm, coef, @formula
     export qreg, coef, vcov, stderr, quantiles, IP, IRLS, @formula
 
-    using DataFrames, Distributions, LinearAlgebra, LinearAlgebra.BLAS, StatsModels, StatsBase
+    import LinearAlgebra.BLAS
+    using DataFrames, Distributions, LinearAlgebra, StatsModels, StatsBase
 
     mutable struct QRegModel
         beta::Vector{Float64}
