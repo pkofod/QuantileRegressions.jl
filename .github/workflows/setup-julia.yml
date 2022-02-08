@@ -1,0 +1,35 @@
+- uses: julia-actions/setup-julia@v1
+  with:
+    # The Julia version that will be installed and added as `julia` to the PATH.
+    # See "Julia Versions" below for a list of valid values.
+    #
+    # Warning: It is strongly recommended to wrap this value in quotes.
+    #          Otherwise, the YAML parser used by GitHub Actions parses certain
+    #          versions as numbers which causes the wrong version to be selected.
+    #          For example, `1.0` may be parsed as `1`.
+    #
+    # Default: '1'
+    version: ''
+
+    # The architecture of the Julia binaries.
+    #
+    # Supported values: x64 | x86
+    #
+    # Default: x64
+    arch: ''
+
+    # Set the display setting for printing InteractiveUtils.versioninfo() after installing.
+    #
+    # Starting Julia and running InteractiveUtils.versioninfo() takes a significant amount of time (1s or ~10% of the total build time in testing),
+    # so you may not want to run it in every build, in particular on paid runners, as this cost will add up quickly.
+    #
+    # See "versioninfo" below for example usage and further explanations.
+    #
+    # Supported values: true | false | never
+    #
+    # true: Always print versioninfo
+    # false: Only print versioninfo for nightly Julia
+    # never: Never print versioninfo
+    #
+    # Default: false
+    show-versioninfo: ''
