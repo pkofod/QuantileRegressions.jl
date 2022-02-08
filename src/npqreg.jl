@@ -1,10 +1,17 @@
-function npqreg(y, x, tau, method=IP(); m=50, h=2, xrange=nothing)
+function npqreg(y, x_in, tau, method=IP(); m=50, h=2, xrange=nothing)
+    # Copy and promote
+    # If users input non-float x eps is not defined
+    x = float.(x_in)
     T = eltype(x)
-    if xrange === nothing
-        xrange = collect(range(extrema(x)..., length=m))
-    end
     z = copy(x)
-    Z = hcat(fill(1, length(x)), z)
+
+    if xrange === nothing
+        xrange = collect(range(extrema(z)..., length=m))
+    else
+        # some users might write xrange=0:40 for example
+        xrange = float.(xrange)
+    end
+    Z = hcat(fill(1, length(z)), z)
     ghat = copy(xrange)
     dghat = copy(xrange)
     for i in 1:length(xrange)

@@ -1,4 +1,4 @@
-using QuantileRegressions, CSV
+using QuantileRegressions, CSV, DataFrames
 @testset "npqreg" begin
 	mycyle = CSV.read("../examples/mcycle.csv", DataFrame)
 	x = mycyle.times
@@ -22,4 +22,15 @@ using QuantileRegressions, CSV
 	@test isnan(res[3][1])
 
 	@test all(QuantileRegressions.npqreg([1.0,2.0,4.0,5.0], [0.0,0.0,6.0,12.0], 0.3; h=0.001, xrange=[0.0,6.0,12.0])[2] .≈ [1.0, 4.0, 5.0])
+
+	yrand = randn(100)
+	# Integer xrange gives same results as float xrange
+	@test all(QuantileRegressions.npqreg(yrand, collect(1:100), 0.4; xrange=1:1:10) .== QuantileRegressions.npqreg(yrand, collect(1:100), 0.4; xrange=1.0:1.0:10.0))
+
+	# Integer x gives same results as float x
+	@test all(QuantileRegressions.npqreg(yrand, collect(1:100), 0.4) .== QuantileRegressions.npqreg(yrand, collect(1.0:100.0), 0.4))
+
+	# Combinations
+	@test all(QuantileRegressions.npqreg(yrand, collect(1.0:100.0), 0.4; xrange=1:1:10) .== QuantileRegressions.npqreg(yrand, collect(1:100), 0.4; xrange=1.0:1.0:10.0))
+	@test all(QuantileRegressions.npqreg(yrand, collect(1:100), 0.4; xrange=1.0:1.0:10.0) .== QuantileRegressions.npqreg(yrand, collect(1:100), 0.4; xrange=1.0:1.0:10.0))
 end
