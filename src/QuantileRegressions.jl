@@ -2,7 +2,6 @@ module QuantileRegressions
 
     import StatsModels: TableRegressionModel, FormulaTerm, coef, @formula
     export qreg, coef, vcov, stderr, quantiles, IP, IRLS, @formula
-
     import LinearAlgebra.BLAS
     using DataFrames, Distributions, LinearAlgebra, StatsModels, StatsBase
 
@@ -26,6 +25,7 @@ module QuantileRegressions
     include("IRLS.jl")
     include("Covariance.jl")
     include("npqreg.jl")
+    include("aqr.jl")
 
     function qreg(f::FormulaTerm, df::AbstractDataFrame, q, weights::AbstractVector, s::Solver = IP())
         mf = ModelFrame(f, df)
