@@ -1,6 +1,6 @@
 name = "QuantileRegressions"
 uuid = "c6596682-b856-542f-9fff-31404643e889"
-version = "0.1.10"
+version = "0.1.11"
 
 [deps]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
@@ -12,7 +12,7 @@ StatsModels = "3eaba693-59b7-5ba5-a881-562e759f1c8d"
 [compat]
 DataFrames = "0.18, 0.19, 0.20, 0.21, 0.22, 1.0"
 Distributions = "0.20, 0.21, 0.22, 0.23, 0.24, 0.25"
-StatsBase = "0.30, 0.31, 0.32, 0.33"
+StatsBase = "0.30, 0.31, 0.32, 0.33, 0.34"
 StatsModels = "0.6, 0.7"
 julia = "1.3"
 
